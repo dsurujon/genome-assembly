@@ -1,5 +1,5 @@
 # genome-assembly
-genome assembly for *Streptococcus pneumoniae" 
+genome assembly for *Streptococcus pneumoniae*
 
 Usage
 --------------------
