@@ -1,5 +1,5 @@
 # genome-assembly
-genome assembly for strep pneumo main scripts
+genome assembly for *Streptococcus pneumoniae" 
 
 Usage
 --------------------
