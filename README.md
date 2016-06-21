@@ -8,3 +8,5 @@ Use this script to assemble complete genomes from a collection of contigs (e.g. 
 `assemble_genome.py -i [inputfile] -l [logfile]`
 
 The output will be an unannotated fasta file with the complete genomic sequence. 
+
+The output can then be sent to RAST for annotation.
