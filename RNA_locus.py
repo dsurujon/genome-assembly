@@ -1,4 +1,6 @@
 
+##This script reads a Genbank file and adds new and unique locus tags to each feature
+
 import os
 from optparse import OptionParser
 
