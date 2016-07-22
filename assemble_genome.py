@@ -25,12 +25,12 @@ with an appropriate number of "N"s. The output is a single fasta file of the com
 genome.
 """
 
-options = OptionParser(usage='%prog -i inputfile',
-                       description="Specify sequence file and generate a complete genbank genome")
+options = OptionParser(usage='%prog -i inputfile -o outputdir',
+                       description="Specify sequence file and an output directory and generate a complete genbank genome")
 options.add_option("-i","--infile",dest="inputfile",
                    help="Input file of contigs(.fasta)")
-options.add_option("-l","--logfile",dest="logfile",
-			help="Log file (.txt)")
+options.add_option("-o","--outputdir",dest="outputdir",
+			help="Output directory")
 
 #lengths of genomes in the reference database
 genome_lens={"NC_003028":2160842,"NC_014498":2240045,"NC_018630":2064154,"NC_003098":2038615,
@@ -128,14 +128,22 @@ def process_fasta(inputfile, preferences,genome):
 	
 def main():
 	opts, args = options.parse_args()
-	filename=str(opts.inputfile)
-	dboutput=filename+"_results.txt"
-	
-	log=open(str(opts.logfile),"w")
+	filepath=str(opts.inputfile)
+	outputdir=str(opts.outputdir)
+	filename=filepath.split("/")[-1]
+
+	if not os.path.exists(outputdir):
+		os.makedirs(outputdir)
+
+	dboutput=os.path.join(outputdir,filename+"_results.txt")
+	logoutput=os.path.join(outputdir,filename+".log")
+	print("Writing to log file: "+logoutput)
+
+	log=open(logoutput,"w")
 	
 	log.write("Starting BLAST search at "+str(datetime.datetime.now())+"\n")
 
-	blasttask2=["blastn", "-query", filename, "-db", "/data1/BioData/BlastDBs/StrepStrains/strep-strains",
+	blasttask2=["blastn", "-query", filepath, "-db", "/data1/BioData/BlastDBs/StrepStrains/strep-strains",
 	"-out", dboutput, "-strand", "both", "-word_size", "8", "-evalue", "1E-20", "-outfmt",
 	"10 qseqid qstart qend evalue sseqid sstart send"]
 	subprocess.call(blasttask2, shell=False)
@@ -143,9 +151,9 @@ def main():
 	log.write("BLAST run ended at "+str(datetime.datetime.now())+"\n")
 	log.write("Rearranging contigs\n")
 	
-	subprocess.call(["Rscript", "get_longest_match_loci.R", dboutput,str(opts.logfile)])
+	subprocess.call(["Rscript", "get_longest_match_loci.R", dboutput,logoutput])
 
-	ftemp=open(str(opts.logfile),"r")
+	ftemp=open(logoutput,"r")
 	templines=ftemp.readlines()
 	ftemp.close()
 	refgenome=templines[-3].split("|")[-2]
