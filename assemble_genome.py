@@ -3,7 +3,7 @@
 
 __author__ = "Defne Surujon"
 __credits__=["Defne Surujon","Alexander Farrell","Federico Rosconi","Jon Anthony","Tim van Opijnen"]
-__version__ = "0.0.1"
+__version__ = "0.0.2"
 __maintainer__="Defne Surujon"
 __email__="surujon@bc.edu"
 
