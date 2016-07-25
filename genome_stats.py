@@ -125,16 +125,17 @@ def get_feature_nucs(seq,coords):
     return feature_nucs
 
 def nuc_counts(seq, seqname):
-    if len(seq)==0: return "Length of "+seqname+" is 0, no nucleotide statistics are computed\n"
-    
-    summary="Nucleotide counts for "+seqname+": \n#A\t#T\t#C\t#G\t#N\n"
-    summary+=str(seq.count("A"))+"\t"+str(seq.count("T"))+"\t"+str(seq.count("C"))+"\t"+str(seq.count("G"))+"\t"+str(seq.count("N"))+"\n"
+	if len(seq)==0: return "Length of "+seqname+" is 0, no nucleotide statistics are computed\n"
 
-    pcN=str(100.*seq.count("N")/len(seq))
-    pcGC=str(100.*(seq.count("C")+seq.count("G"))/len(seq))
-    summary+="%N's: "+pcN+"\n%GC: :"+pcGC+"\n\n"
+	summary="Nucleotide counts for "+seqname+": \n#A\t#T\t#C\t#G\t#N\n"
+	summary+=str(seq.count("A"))+"\t"+str(seq.count("T"))+"\t"+str(seq.count("C"))+"\t"+str(seq.count("G"))+"\t"+str(seq.count("N"))+"\n"
 
-    return summary
+	pcN=str(100.*seq.count("N")/len(seq))
+	pcGC=str(100.*(seq.count("C")+seq.count("G"))/len(seq))
+	pcGCwoN=str(100.*(seq.count("C")+seq.count("G"))/(len(seq)-seq.count("N")))
+	summary+="%N's: "+pcN+"\n%GC: "+pcGC+"\n%GC (excluding N's): "+pcGCwoN+"\n\n"
+
+	return summary
     
 def main():
     opts, args = options.parse_args()
@@ -158,6 +159,7 @@ def main():
     gnm_meta["Length"]=len(gnm)
 
     gnm_meta["%GC"]=100.*(gnm_meta["Gcount"]+gnm_meta["Ccount"])/gnm_meta["Length"]
+    gnm_meta["%GCwoN"]=100.*(gnm_meta["Gcount"]+gnm_meta["Ccount"])/(gnm_meta["Length"]-gnm_meta["Ncount"])
     gnm_meta["%N"]=100.*(gnm_meta["Ncount"])/gnm_meta["Length"]
 
     #for i in gnm_meta: print(i,gnm_meta[i])
@@ -166,7 +168,7 @@ def main():
     outputheader="Genome statistics for "+genomefile
     f.write(outputheader+"\n")
     f.write("="*len(outputheader)+"\n")
-    
+
     try:        #For FASTA
         f.write("Genome header: "+gnm_meta["Header"]+"\n")
     except KeyError:
@@ -184,10 +186,11 @@ def main():
     f.write("Nucleotide counts for the whole genome:\n")
     f.write("#A\t#T\t#C\t#G\t#N\n")
     f.write(str(gnm_meta["Acount"])+"\t"+str(gnm_meta["Tcount"])+"\t"+
-            str(gnm_meta["Ccount"])+"\t"+str(gnm_meta["Gcount"])+"\t"+
-            str(gnm_meta["Ncount"])+"\n")
+			str(gnm_meta["Ccount"])+"\t"+str(gnm_meta["Gcount"])+"\t"+
+			str(gnm_meta["Ncount"])+"\n")
     f.write("%N's: "+str(gnm_meta["%N"])+"\n")
-    f.write("%GC: :"+str(gnm_meta["%GC"])+"\n\n")
+    f.write("%GC: "+str(gnm_meta["%GC"])+"\n")
+    f.write("%GC (excluding N's): "+str(gnm_meta["%GCwoN"])+"\n")
 
     try:        #for GBK
         #total number of features
