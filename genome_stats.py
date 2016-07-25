@@ -91,7 +91,12 @@ def read_gbk(genome):
             isFeatures=False
         #read the sequence until the ending "//"
         elif isSequence and line[0]!="/":
-            genome_sequence+=line.translate({ord(x):None for x in " 1234567890\n"})
+
+            chars=" 1234567890\n"
+            for c in chars: line=line.replace(c,"")
+            genome_sequence+=line
+            #following is for python3 only
+            #genome_sequence+=line.translate({ord(x):None for x in " 1234567890\n"})
 
     genome_metadata["CDS"]=CDScoords
     genome_metadata["tRNA"]=tRNAcoords
@@ -109,6 +114,27 @@ def get_feature_coords(l):
         c1=coords.split("..")[0]
         c2=coords.split("..")[1]
     return int(c1), int(c2)
+
+def get_feature_nucs(seq,coords):
+    feature_nucs=""
+    for i in range(0,len(coords[0])):
+        featstart=coords[0][i]-1
+        featend=coords[1][i]
+        
+        feature_nucs+=seq[featstart:featend]
+    return feature_nucs
+
+def nuc_counts(seq, seqname):
+    if len(seq)==0: return "Length of "+seqname+" is 0, no nucleotide statistics are computed\n"
+    
+    summary="Nucleotide counts for "+seqname+": \n#A\t#T\t#C\t#G\t#N\n"
+    summary+=str(seq.count("A"))+"\t"+str(seq.count("T"))+"\t"+str(seq.count("C"))+"\t"+str(seq.count("G"))+"\t"+str(seq.count("N"))+"\n"
+
+    pcN=str(100.*seq.count("N")/len(seq))
+    pcGC=str(100.*(seq.count("C")+seq.count("G"))/len(seq))
+    summary+="%N's: "+pcN+"\n%GC: :"+pcGC+"\n\n"
+
+    return summary
     
 def main():
     opts, args = options.parse_args()
@@ -170,7 +196,12 @@ def main():
         f.write("#Features: "+str(numfeats)+"\n")
         f.write("\t#CDS: "+str(len(gnm_meta["CDS"][0]))+"\n")
         f.write("\t#tRNA: "+str(len(gnm_meta["tRNA"][0]))+"\n")
-        f.write("\t#rRNA: "+str(len(gnm_meta["rRNA"][0]))+"\n")
+        f.write("\t#rRNA: "+str(len(gnm_meta["rRNA"][0]))+"\n\n")
+
+        #get features into separate strings for nucleotide stats
+        CDSnucs=get_feature_nucs(gnm,gnm_meta["CDS"])
+        tRNAnucs=get_feature_nucs(gnm,gnm_meta["tRNA"])
+        rRNAnucs=get_feature_nucs(gnm,gnm_meta["rRNA"])
 
         #lengths of features
         CDSlen=sum(gnm_meta["CDS"][1])-sum(gnm_meta["CDS"][0])
@@ -178,18 +209,22 @@ def main():
         if len(gnm_meta["CDS"][0])>0:
             CDSavg=CDSlen/len(gnm_meta["CDS"][0])
             f.write("Average length of CDS: "+str(CDSavg)+"\n")
+        f.write(nuc_counts(CDSnucs,"CDS"))
 
         tRNAlen=sum(gnm_meta["tRNA"][1])-sum(gnm_meta["tRNA"][0])
         f.write("Total length of tRNA: "+str(tRNAlen)+"\n")
         if len(gnm_meta["tRNA"][0])>0:
             tRNAavg=tRNAlen/len(gnm_meta["tRNA"][0])
             f.write("Average length of tRNA: "+str(tRNAavg)+"\n")
+        f.write(nuc_counts(tRNAnucs,"tRNA"))
 
         rRNAlen=sum(gnm_meta["rRNA"][1])-sum(gnm_meta["rRNA"][0])
         f.write("Total length of rRNA: "+str(rRNAlen)+"\n")
         if len(gnm_meta["rRNA"][0])>0:
             rRNAavg=rRNAlen/len(gnm_meta["rRNA"][0])
             f.write("Average length of rRNA: "+str(rRNAavg)+"\n")
+        f.write(nuc_counts(rRNAnucs,"rRNA"))
+
         
     except KeyError:
         pass
