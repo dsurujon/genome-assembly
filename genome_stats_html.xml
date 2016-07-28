@@ -1,0 +1,25 @@
+<tool id="genome_stats_html" name="Generate genome summary statistics" version="0.1">
+
+	<command interpreter="python">genome_stats_html.py -i $input -g $format.genomeformat -o $htmlfile.files_path -f $htmlfile </command>
+	<inputs>
+	
+
+		<param format="txt" name="input" type="data" label="Genome file"/>
+		<conditional name="format">
+			<param name="genomeformat" type="select" label="Select the format of your genome file">
+				<option value="fasta">Fasta</option>
+				<option value="gbk">Genbank</option>
+			</param>
+		</conditional>
+		<param name="job_name" type="text" label="Supply a name for the outputs" value="html_out"/>
+	</inputs>
+	<outputs>
+		<data format="html" name="htmlfile" label="${job_name}.html" />
+		
+	</outputs>
+
+	<help>
+This tool creates an html file that contains summary statistics for a genome (fasta or genbank)
+	</help>
+
+</tool>
